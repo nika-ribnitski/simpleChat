@@ -68,6 +68,47 @@ public class ChatClient extends AbstractClient
   {
     try
     {
+      if(message.charAt(0)=='#'){
+        String[] arr = message.split(" ");
+
+        switch (arr[0]){
+          case "#quit":
+            quit();
+            break;
+          case "#logoff":
+            closeConnection();
+            break;
+          case "#sethost":
+            if(this.isConnected()){
+              System.out.println("You are already connected to a server. REQUEST FAILED.");
+            }else{
+              super.setHost(arr[1]);
+            }
+            break;
+          case "#setport":
+            if(this.isConnected()){
+              System.out.println("You are already connected to a server. REQUEST FAILED.");
+            }else{
+              super.setPort(Integer.parseInt(arr[1]));
+            }
+            break;
+          case "#login":
+            if(this.isConnected()){
+              System.out.println("You are already connected to a server. REQUEST FAILED.");
+            }else{
+              this.openConnection();
+            }
+            break;
+          case "#gethost":
+            System.out.println("The host is: " + this.getHost());
+            break;
+          case "#getport":
+            System.out.println("The port is: " + this.getPort());
+            break;
+          default:
+            System.out.println("Command not recognized.");
+        }
+      }
       sendToServer(message);
     }
     catch(IOException e)
@@ -90,5 +131,18 @@ public class ChatClient extends AbstractClient
     catch(IOException e) {}
     System.exit(0);
   }
+
+  @Override
+  public void connectionException(Exception exception){
+    clientUI.display("Something happend when connecting to the server");
+    
+    //quit();
+  }
+
+  @Override
+  public void connectionClosed(){
+    clientUI.display("Connection with the server is now closed!");
+  }
+
 }
 //End of ChatClient class

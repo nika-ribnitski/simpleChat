@@ -5,6 +5,8 @@
 import java.io.*;
 import java.util.Scanner;
 
+//import org.graalvm.compiler.nodes.NodeView.Default;
+
 import client.*;
 import common.*;
 
@@ -80,11 +82,9 @@ public class ClientConsole implements ChatIF
   {
     try
     {
-
       String message;
 
-      while (true) 
-      {
+      while (true){
         message = fromConsole.nextLine();
         client.handleMessageFromClientUI(message);
       }
@@ -118,18 +118,29 @@ public class ClientConsole implements ChatIF
   public static void main(String[] args) 
   {
     String host = "";
+    int port = 0;
 
-
-    try
-    {
-      host = args[0];
+    switch (args.length){
+      case 0: 
+        host = "localhost";
+        port = DEFAULT_PORT;
+        break;
+      case 1: 
+        host = args[0];
+        port = DEFAULT_PORT;
+        break;
+      default:
+        host = args[0];
+        try{
+          port = Integer.parseInt(args[1]);
+        }catch (Throwable t){
+          port = DEFAULT_PORT;
+        }
     }
-    catch(ArrayIndexOutOfBoundsException e)
-    {
-      host = "localhost";
-    }
-    ClientConsole chat= new ClientConsole(host, DEFAULT_PORT);
+    
+    ClientConsole chat= new ClientConsole(host, port);
     chat.accept();  //Wait for console data
+    
   }
 }
 //End of ConsoleChat class

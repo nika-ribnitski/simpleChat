@@ -73,6 +73,21 @@ public class EchoServer extends AbstractServer
   }
   
   //Class methods ***************************************************
+
+
+  /**
+   * This method detects disconnected clients and prints a nice message
+   *
+   * @param client is the client that disconnected (i hope)
+   */
+  public void clientDisconnected(ConnectionToClient client) {
+    sendToAllClients("A client has disconnected. Have a nice day " + client + "!"); //        ADD A NAME WHEN U GET A NAME!!!
+    System.out.println("A client has disconnected. Have a nice day " + client + "!");
+  }
+
+  public void clientConnected(ConnectionToClient client) {
+    System.out.println("A client has connected. Say hi to " + client + "!");
+  }
   
   /**
    * This method is responsible for the creation of 
