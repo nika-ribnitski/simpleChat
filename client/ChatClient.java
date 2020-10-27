@@ -66,8 +66,6 @@ public class ChatClient extends AbstractClient
    */
   public void handleMessageFromClientUI(String message)
   {
-    try
-    {
       if(message.charAt(0)=='#'){
         String[] arr = message.split(" ");
 
@@ -76,7 +74,11 @@ public class ChatClient extends AbstractClient
             quit();
             break;
           case "#logoff":
-            closeConnection();
+            try{
+              closeConnection();
+            }catch(Exception e){
+              System.out.println("There was an error closing the server.");
+            }
             break;
           case "#sethost":
             if(this.isConnected()){
@@ -96,7 +98,11 @@ public class ChatClient extends AbstractClient
             if(this.isConnected()){
               System.out.println("You are already connected to a server. REQUEST FAILED.");
             }else{
-              this.openConnection();
+              try{
+                this.openConnection();
+              }catch (IOException e){
+                System.out.println("Connection failed.");
+              }
             }
             break;
           case "#gethost":
@@ -108,16 +114,15 @@ public class ChatClient extends AbstractClient
           default:
             System.out.println("Command not recognized.");
         }
+      }else{
+        try{
+          sendToServer(message);
+        } catch(IOException e){
+            clientUI.display("Could not send message to server.  Terminating client.");
+            quit();
+        }
       }
-      sendToServer(message);
     }
-    catch(IOException e)
-    {
-      clientUI.display
-        ("Could not send message to server.  Terminating client.");
-      quit();
-    }
-  }
   
   /**
    * This method terminates the client.
@@ -135,7 +140,7 @@ public class ChatClient extends AbstractClient
   @Override
   public void connectionException(Exception exception){
     clientUI.display("Something happend when connecting to the server");
-    
+    connectionClosed();
     //quit();
   }
 

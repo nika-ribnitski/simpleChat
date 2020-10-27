@@ -88,6 +88,51 @@ public class EchoServer extends AbstractServer
   public void clientConnected(ConnectionToClient client) {
     System.out.println("A client has connected. Say hi to " + client + "!");
   }
+
+  public void handleMessageFromServerUI(String message){
+
+    if(message.charAt(0)=='#'){
+      String[] arr = message.split(" ");
+
+      switch (arr[0]){
+        case "#quit":
+          this.sendToAllClients("The server will now quit.");
+          System.exit(0);
+          break;
+        case "#stop":
+          this.stopListening();
+          this.sendToAllClients("The server has stopped listening.");
+          break;
+        case "#close":
+          try{
+            this.sendToAllClients("The server will now closed.");
+            this.close();
+          } catch(Exception e){
+            System.out.println("Unable to close.");
+          }
+          break;
+        case "#setport":
+          if(this.isListening() && this.getNumberOfClients()>0){
+            System.out.println("The server is on. REQUEST FAILED.");
+          }else{
+            super.setPort(Integer.parseInt(arr[1]));
+          }
+          break;
+        case "#getport":
+          System.out.println("The port is: " + this.getPort());
+          break;
+        default:
+          System.out.println("Command not recognized.");
+      }
+    }else{
+      try{
+        this.sendToAllClients("SERVER MSG> " + message);
+        System.out.println("SERVER MSG> " + message);
+      } catch(Exception e){
+          System.out.println("Could not send message to clients.");
+      }
+    }
+  }
   
   /**
    * This method is responsible for the creation of 
