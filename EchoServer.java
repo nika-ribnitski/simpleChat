@@ -3,6 +3,7 @@
 // license found at www.lloseng.com 
 
 import java.io.*;
+
 import ocsf.server.*;
 
 /**
@@ -48,10 +49,32 @@ public class EchoServer extends AbstractServer
   public void handleMessageFromClient
     (Object msg, ConnectionToClient client)
   {
-    System.out.println("Message received: " + msg + " from " + client);
-    this.sendToAllClients(msg);
+    String message = msg.toString();
+    if (message.startsWith("#login")) {
+      System.out.println("Message received: " + msg + " from " + client.getInfo("loginId") +".");
+      this.sendToAllClients(msg);
+    }
+
+    String[] ar = message.split(" ");
+    if(ar[0].equals("#login")){ 
+      if(client.getInfo("loginId")!=null){
+        System.out.println("You are already logged in. Interaction Terminated.");
+        try{
+          this.close();
+        } catch(IOException e){
+          System.out.println("Sad things are happening right now.");
+        }
+      }else{
+        client.setInfo("loginId",ar[1]);
+        System.out.println(client.getInfo("loginId") +" has logged on.");
+      }          
+    }else{
+      System.out.println("Message received from " + client.getInfo("loginId") + ": " + msg);
+      this.sendToAllClients(client.getInfo("loginId") + "> " + msg);
+    }
   }
-    
+
+
   /**
    * This method overrides the one in the superclass.  Called
    * when the server starts listening for connections.
@@ -59,7 +82,7 @@ public class EchoServer extends AbstractServer
   protected void serverStarted()
   {
     System.out.println
-      ("Server listening for connections on port " + getPort());
+      ("Server listening for clients on port " + getPort());
   }
   
   /**
@@ -81,12 +104,12 @@ public class EchoServer extends AbstractServer
    * @param client is the client that disconnected (i hope)
    */
   public void clientDisconnected(ConnectionToClient client) {
-    sendToAllClients("A client has disconnected. Have a nice day " + client + "!"); //        ADD A NAME WHEN U GET A NAME!!!
-    System.out.println("A client has disconnected. Have a nice day " + client + "!");
+    sendToAllClients("A client has disconnected.");   
+    System.out.println("A client has disconnected.");
   }
 
   public void clientConnected(ConnectionToClient client) {
-    System.out.println("A client has connected. Say hi to " + client + "!");
+    System.out.println("A new client is attempting to connect to the server.");
   }
 
   public void handleMessageFromServerUI(String message){
@@ -97,15 +120,29 @@ public class EchoServer extends AbstractServer
       switch (arr[0]){
         case "#quit":
           this.sendToAllClients("The server will now quit.");
+          try{
+            this.close();
+          } catch (IOException e){
+            System.exit(1);
+          }
           System.exit(0);
           break;
         case "#stop":
           this.stopListening();
-          this.sendToAllClients("The server has stopped listening.");
+          sendToAllClients("WARNING - The server has stopped listening for connections");
+          break;
+        case "#start":
+          if(!this.isListening()){
+            try{
+              this.listen();
+            } catch(IOException e){
+              System.out.println("ERROR: Could not start.");
+            }
+          }
           break;
         case "#close":
           try{
-            this.sendToAllClients("The server will now closed.");
+            sendToAllClients("SERVER SHUTTING DOWN! DISCONNECTING!");
             this.close();
           } catch(Exception e){
             System.out.println("Unable to close.");
@@ -116,6 +153,7 @@ public class EchoServer extends AbstractServer
             System.out.println("The server is on. REQUEST FAILED.");
           }else{
             super.setPort(Integer.parseInt(arr[1]));
+            System.out.println("The port has been set to: " + this.getPort());
           }
           break;
         case "#getport":
